@@ -5,10 +5,9 @@ selectTag = document.querySelectorAll("select"),
 icons = document.querySelectorAll(".row i");
 translateBtn = document.querySelector("button"),
 
-
 selectTag.forEach((tag, id) => {
     for (let country_code in countries) {
-        let selected = id == 0 ? country_code == "en-GB" ? "selected" : "" : country_code == "hi-IN" ? "selected" : "";
+        let selected = id == 0 ? country_code == "en" ? "selected" : "" : country_code == "hi" ? "selected" : "";
         let option = `<option ${selected} value="${country_code}">${countries[country_code]}</option>`;
         tag.insertAdjacentHTML("beforeend", option);
     }
@@ -33,11 +32,26 @@ translateBtn.addEventListener("click", () => {
     let text = fromText.value.trim(),
     translateFrom = selectTag[0].value,
     translateTo = selectTag[1].value;
+    encodedParams = new URLSearchParams();
+    encodedParams.append("q", text);
+    encodedParams.append("target", translateTo);
+    encodedParams.append("source", translateFrom);
+
+const options = {
+	method: 'POST',
+	headers: {
+		'content-type': 'application/x-www-form-urlencoded',
+		'Accept-Encoding': 'application/gzip',
+		'X-RapidAPI-Key': '',
+		'X-RapidAPI-Host': 'google-translate1.p.rapidapi.com'
+	},
+	body: encodedParams
+};
     if(!text) return;
     toText.setAttribute("placeholder", "Translating...");
-    let apiUrl = `https://api.mymemory.translated.net/get?q=${text}&langpair=${translateFrom}|${translateTo}`;
-    fetch(apiUrl).then(res => res.json()).then(data => {
-        toText.value = data.responseData.translatedText;
+    let apiUrl = 'https://google-translate1.p.rapidapi.com/language/translate/v2';
+    fetch(apiUrl, options).then(res => res.json()).then(res => {
+        toText.value = res.data.translations[0].translatedText;
         data.matches.forEach(data => {
             if(data.id === 0) {
                 toText.value = data.translation;
